@@ -1,0 +1,38 @@
+{%- for name, cfg in snippets.items() %}
+({{ name }}) {
+{%- for line in cfg %}
+    {{ line }}
+{%- endfor %}
+}
+{% endfor %}
+
+{%- for name, cfg in servers.items() %}
+# {{ name }}
+{{ cfg.get('domain', '.') }}{% if cfg.get('port') %}:{{ cfg.get('port') }}{% endif %} {
+{%- if cfg.get('acme', {}).get('enabled', False) %}
+    acme {
+    {%- for conf in cfg.get('acme').get('config', []) %}
+        {{ conf }}
+    {%- endfor %}
+    {%- for account in cfg.get('acme').get('accounts', []) %}
+        {%- for zone in account.get('zones', []) %}
+        account {{ account.get('username') }} {{ account.get('password_hash', account.get('password')) }} {{ zone }} {{ ' '.join(account.get('allowed_ips', [])) }}
+        {%- endfor %}
+    {%- endfor %}
+    fallthrough
+    }
+{%- endif %}
+{%- if cfg.get('notify', []) %}
+    transfer {
+    {%- for ip in cfg.get('notify') %}
+        to {{ ip }}
+    {%- endfor %}
+    }
+{%- endif %}
+
+{%- for conf in cfg.get('config', []) %}
+    {{ conf }}
+{%- endfor %}
+}
+
+{% endfor %}
