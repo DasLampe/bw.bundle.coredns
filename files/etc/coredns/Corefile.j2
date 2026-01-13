@@ -6,33 +6,42 @@
 }
 {% endfor %}
 
-{%- for name, cfg in servers.items() %}
-# {{ name }}
-{{ cfg.get('domain', '.') }}{% if cfg.get('port') %}:{{ cfg.get('port') }}{% endif %} {
-{%- if cfg.get('acme', {}).get('enabled', False) %}
+{%- for server_name, server_cfg in servers.items() %}
+{%- for zone, zone_cfg in server_cfg.get('zones', {}).items() %}
+{%- if zone.get('enabled', True) %}
+# {{ server_name }} - {{ zone }}
+{{ zone }}{% if server_cfg.get('port') %}:{{ server_cfg.get('port') }}{% endif %} {
+{%- if zone_cfg.get('acme', {}).get('enabled', False) %}
     acme {
-    {%- for conf in cfg.get('acme').get('config', []) %}
+    {%- for conf in zone_cfg.get('acme').get('config', []) %}
         {{ conf }}
     {%- endfor %}
-    {%- for account in cfg.get('acme').get('accounts', []) %}
-        {%- for zone in account.get('zones', []) %}
-        account {{ account.get('username') }} {{ account.get('password_hash', account.get('password')) }} {{ zone }} {{ ' '.join(account.get('allowed_ips', [])) }}
+    {%- for account in zone_cfg.get('acme').get('accounts', []) %}
+        {%- for z in account.get('zones', [zone]) %}
+        account {{ account.get('username') }} {{ account.get('password_hash', account.get('password')) }} {{ z }} {{ ' '.join(account.get('allowed_ips', [])) }}
         {%- endfor %}
     {%- endfor %}
     fallthrough
     }
 {%- endif %}
-{%- if cfg.get('notify', []) %}
+{%- if zone_cfg.get('notify', []) %}
     transfer {
-    {%- for ip in cfg.get('notify') %}
+    {%- for ip in zone_cfg.get('notify') %}
         to {{ ip }}
     {%- endfor %}
     }
 {%- endif %}
 
-{%- for conf in cfg.get('config', []) %}
+{%- if not zone_cfg.get('disable_file', False) %}
+    file {{ zone_cfg.get('filename', '/etc/coredns/zones/' + server_name +'/db.' + zone) }} {
+        reload 60s
+    }
+{%- endif %}
+
+{%- for conf in zone_cfg.get('config', []) %}
     {{ conf }}
 {%- endfor %}
 }
-
+{% endif %}
+{% endfor %}
 {% endfor %}

@@ -41,8 +41,10 @@ svc_systemd = {
         'running': True,
         'enabled': True,
         'needs': [
+            'zonefiles:',
             'file:/etc/systemd/system/coredns.service',
             f'file:{defaultDir}/Corefile',
+            'file:/opt/coredns/coredns',
         ]
     }
 }
@@ -64,18 +66,9 @@ for name, server_config in config.get('servers', {}).items():
         'group': group,
     }
 
-    # Remove unmanaged zonefiles
-    result = node.run(f"find {quote(zoneDir)} -maxdepth 1 -print0 -type f || echo {zoneDir}")
-    for line in result.stdout.split(b"\0"):
-        line = line.decode('utf-8')
-        if line.lstrip(f'{zoneDir}/db.') != "" and line.lstrip(f'{zoneDir}/db.') not in server_config.get('zones', {}).keys():
-            files[line] = {
-                'delete': True,
-            }
-
     # Gather zonesfiles
     for zone, zone_config in server_config.get('zones', {}).items():
-        if not zone_config.get('enabled', True):
+        if not zone.rstrip('.') or not zone_config.get('enabled', True):
             continue
 
         # create ns records we add a . to the end of every domain, since we assume they are absolute
@@ -101,7 +94,7 @@ for name, server_config in config.get('servers', {}).items():
             'zonefile_filename': f'db.{zone}', # Be compatible with powerdns zonefile item,
             'needs': [
                 f'directory:{zoneDir}',
-            ]
+            ],
         }
 
         if zone_config.get('zone_type') == 'group':
@@ -145,10 +138,7 @@ for name, server_config in config.get('servers', {}).items():
 
     servers[name] = {
         'port': server_config.get('port'),
-        'auto': server_config.get('auto', {}),
-        'notify': server_config.get('notify', []),
-        'config': server_config.get('config', []),
-        'acme': server_config.get('acme', {}),
+        'zones': server_config.get('zones', {}),
     }
 
 files[f'{defaultDir}/Corefile'] = {
@@ -163,12 +153,20 @@ files[f'{defaultDir}/Corefile'] = {
     'group': group,
     'needs': [
         'zonefiles:',
+    ],
+    'triggers': [
+        'svc_systemd:coredns.service:restart',
     ]
 }
 
 if config.get('url', '').startswith('local:'):
-    node.run('mkdir -p /opt/coredns')
-    node.upload(os.path.join(node.repo.data_dir, config.get('url').replace('local:', '')), '/opt/coredns/coredns', mode="0555", owner=owner, group=group)
+    files['/opt/coredns/coredns'] = {
+        'source': config.get('url').replace('local:', ''),
+        'content_type': 'binary',
+        'mode': '0555',
+        'owner': owner,
+        'group': group,
+    }
 else:
     files['/opt/coredns/coredns'] = {
         'source': config.get('url', ''),
