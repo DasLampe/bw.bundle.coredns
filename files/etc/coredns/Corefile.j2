@@ -8,7 +8,7 @@
 
 {%- for server_name, server_cfg in servers.items() %}
 {%- for zone, zone_cfg in server_cfg.get('zones', {}).items() %}
-{%- if zone.get('enabled', True) %}
+{%- if zone_cfg.get('enabled', True) %}
 # {{ server_name }} - {{ zone }}
 {{ zone }}{% if server_cfg.get('port') %}:{{ server_cfg.get('port') }}{% endif %} {
 {%- if zone_cfg.get('acme', {}).get('enabled', False) %}
