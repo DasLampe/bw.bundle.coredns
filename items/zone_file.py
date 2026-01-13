@@ -23,6 +23,7 @@ from dns.rdtypes.IN.SRV import SRV
 from dns.rdtypes.ANY.PTR import PTR
 from dns.rdtypes.ANY.SOA import SOA
 from dns.rdtypes.ANY.TXT import TXT
+from dns.rdtypes.ANY.MX import MX
 
 from dns.zone import NoSOA, NoNS
 
@@ -64,6 +65,11 @@ allowed_records = {
         'class': dns.rdataclass.IN,
         'type': dns.rdatatype.TXT,
         'obj': lambda x: TXT(dns.rdataclass.IN, dns.rdatatype.TXT, split_txt_record(x))
+    },
+    'MX': {
+        'class': dns.rdataclass.IN,
+        'type': dns.rdatatype.MX,
+        'obj': lambda x: MX(dns.rdataclass.IN, dns.rdatatype.MX, int(x.get('preference', 10)), x.get('exchange'))
     },
 }
 
