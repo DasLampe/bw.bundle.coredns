@@ -24,6 +24,7 @@ from dns.rdtypes.ANY.PTR import PTR
 from dns.rdtypes.ANY.SOA import SOA
 from dns.rdtypes.ANY.TXT import TXT
 from dns.rdtypes.ANY.MX import MX
+from dns.rdtypes.ANY.CAA import CAA
 
 from dns.zone import NoSOA, NoNS
 
@@ -71,6 +72,11 @@ allowed_records = {
         'type': dns.rdatatype.MX,
         'obj': lambda x: MX(dns.rdataclass.IN, dns.rdatatype.MX, int(x.get('preference', 10)), x.get('exchange'))
     },
+    'CAA': {
+        'class': dns.rdataclass.IN,
+        'type': dns.rdatatype.CAA,
+        'obj': lambda x: CAA(dns.rdataclass.IN, dns.rdatatype.CAA, int(x.get('flags', 0)), x.get('tag', 'issue').encode(), x.get('value', ';').encode())
+    }
 }
 
 
