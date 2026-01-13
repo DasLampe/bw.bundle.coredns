@@ -21,7 +21,7 @@
         account {{ account.get('username') }} {{ account.get('password_hash', account.get('password')) }} {{ z }} {{ ' '.join(account.get('allowed_ips', [])) }}
         {%- endfor %}
     {%- endfor %}
-    fallthrough
+        fallthrough
     }
 {%- endif %}
 {%- if zone_cfg.get('notify', []) %}

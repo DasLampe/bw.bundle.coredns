@@ -27,14 +27,15 @@ def merge_server_and_zone_config(metadata):
         }
         for zone, zone_config in server_config.get('zones', {}).items():
             merged[name]['zones'][zone] = {
-                'name_servers': merge_dict(zone_config.get('name_servers', {}), server_config.get('name_servers', {})),
-                'notify': merge_dict(zone_config.get('notify', []), server_config.get('notify', [])),
-                'config': merge_dict(zone_config.get('config', {}), server_config.get('config', {})),
-                'soa': merge_dict(zone_config.get('soa', {}), server_config.get('soa', {}))
+                'name_servers': server_config.get('name_servers', {}),
+                'notify': server_config.get('notify', []),
+                'config': server_config.get('config', {}),
+                'soa':  server_config.get('soa', {}),
+                'acme': server_config.get('acme', {}),
             }
 
             if zone_config.get('use_template_records', False):
-                merged[name]['zones'][zone]['records'] = merge_dict(zone_config.get('records', {}), server_config.get('template_records', {}))
+                merged[name]['zones'][zone]['records'] = server_config.get('template_records', {})
 
     return {
         'coredns': {
