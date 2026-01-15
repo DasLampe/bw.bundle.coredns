@@ -25,6 +25,14 @@
     }
 {%- endif %}
 {%- if zone_cfg.get('notify', []) %}
+    acl {
+    {%- for ip in zone_cfg.get('notify') %}
+        allow type AXFR net {{ ip }}
+        allow type IXFR net {{ ip }}
+    {%- endfor %}
+        block type AXFR net *
+        block type IXFR net *
+    }
     transfer {
     {%- for ip in zone_cfg.get('notify') %}
         to {{ ip }}
@@ -35,6 +43,7 @@
 {%- if not zone_cfg.get('disable_file', False) %}
     file {{ zone_cfg.get('filename', '/etc/coredns/zones/' + server_name +'/db.' + zone) }} {
         reload 60s
+        fallthrough
     }
 {%- endif %}
 
