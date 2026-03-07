@@ -12,12 +12,12 @@
 # {{ server_name }} - {{ zone }}
 {{ zone }}{% if server_cfg.get('port') %}:{{ server_cfg.get('port') }}{% endif %} {
 {%- if zone_cfg.get('acme', {}).get('enabled', False) %}
-    acme {
+    acme . {
     {%- for conf in zone_cfg.get('acme').get('config', []) %}
         {{ conf }}
     {%- endfor %}
     {%- for account in zone_cfg.get('acme').get('accounts', []) %}
-        {%- for z in account.get('zones', [zone]) %}
+        {%- for z in account.get('zones', []) %}
         account {{ account.get('username') }} {{ account.get('password_hash', account.get('password')) }} {{ z }} {{ ' '.join(account.get('allowed_ips', [])) }}
         {%- endfor %}
     {%- endfor %}

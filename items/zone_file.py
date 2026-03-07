@@ -98,7 +98,7 @@ def generate_zone(zone_name, attributes):
     mname = attributes['soa']['nameserver']
     rname = attributes['soa']['postmaster']
     refresh = attributes['soa'].get('refresh', 14400)
-    retry = attributes['soa'].get('retry', 7200)
+    retry = attributes['soa'].get('retry', 4800)
     expire = attributes['soa'].get('expire', 604800)
     minimum = attributes['soa'].get('minimum', 14400)
 
