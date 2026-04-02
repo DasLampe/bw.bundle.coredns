@@ -1,5 +1,3 @@
-from bundlewrap.utils.dicts import merge_dict
-
 defaults = {
 }
 
