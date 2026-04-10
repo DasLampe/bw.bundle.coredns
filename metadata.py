@@ -1,4 +1,9 @@
 defaults = {
+    'coredns': {
+        'url': 'https://github.com/coredns/coredns/releases/download/v1.14.2/coredns_1.14.2_linux_amd64.tgz',
+        'sha256_checksum': '2f08896df9d28ea0cd2294037e6d66e82f996b504e4901b791be8a3ae042029b',
+        'sha1_checksum': '6cb3c83a39ab3349e52058081c39897c4b512e34',
+    }
 }
 
 @metadata_reactor

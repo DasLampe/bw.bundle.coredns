@@ -44,8 +44,8 @@ svc_systemd = {
             'zonefiles:',
             'file:/etc/systemd/system/coredns.service',
             f'file:{defaultDir}/Corefile',
-            'file:/opt/coredns/coredns',
-        ]
+            'tag:coredns_binary',
+        ],
     }
 }
 zonefiles = {} # Special item
@@ -166,12 +166,36 @@ if config.get('url', '').startswith('local:'):
         'mode': '0555',
         'owner': owner,
         'group': group,
+        'tags': [
+            'coredns_binary',
+        ],
     }
 else:
-    files['/opt/coredns/coredns'] = {
-        'source': config.get('url', ''),
+    files['/tmp/coredns.tgz'] = {
+        'source': config.get('url'),
+        'content_hash': config.get('sha1_checksum'),
         'content_type': 'download',
-        'mode': '0555',
         'owner': owner,
         'group': group,
+        'triggers': [
+            'action:unpack_coredns_binary',
+        ],
+    }
+
+    directories['/opt/coredns'] = {
+        'owner': owner,
+        'group': group,
+    }
+
+    actions = {
+        'unpack_coredns_binary': {
+            'command': 'tar xfz /tmp/coredns.tgz -C /opt/coredns',
+            'triggered': True,
+            'needs': [
+                'directory:/opt/coredns',
+            ],
+            'tags': [
+                'coredns_binary',
+            ]
+        },
     }
